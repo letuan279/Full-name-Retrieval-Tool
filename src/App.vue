@@ -64,7 +64,7 @@ const handleOutputClick = () => {
     alert('No output to copy');
     return;
   }
-  const data = outputData.value.map((item) => item.fullName.toUpperCase().join('\n'));
+  const data = outputData.value.map((item) => item.fullName.toUpperCase()).join('\n');
   navigator.clipboard.writeText(data).then(() => {
     alert('Output copied to clipboard');
   }).catch(() => {
