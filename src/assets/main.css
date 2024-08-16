@@ -1,1 +1,30 @@
 @import './base.css';
+
+html {
+    -webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+.btn {
+    background: #fef3c7;
+    font-weight: bold;
+    font-size: 20px;
+    display: block;
+    margin: 10px auto 0;
+    min-width: 150px;
+    height: 40px;
+    border: 1px solid #e7e5e4;
+    border-radius: 10px;
+    transition: all 0.1s;
+}
+
+.btn:hover {
+    background: #e7e5e4;
+    cursor: pointer;
+    transform: scale(1.05);
+}
+
+.btn:disabled {
+    background: #e7e5e4;
+    cursor: not-allowed;
+}

@@ -26,6 +26,13 @@ class TextRetrievalTool {
         }));
     }
 
+    processMessagesWithId(messageWithId) {
+        return messageWithId.map((data) => ({
+            id: data.id,
+            message: this.preprocessText(data.message)
+        }));
+    }
+
     changeAPIKeyAndModel() {
         this.apiKeyIndex = (this.apiKeyIndex + 1) % this.apiKeys.length;
         this.modelIndex = (this.modelIndex + 1) % this.models.length;
