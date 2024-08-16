@@ -1,6 +1,6 @@
-# fullnameRetrieval
+# Student information retrieval from Transaction messages Tool
 
-This template should help get you started developing with Vue 3 in Vite.
+Tool trích xuất tên trong tin nhắn giao dịch và tìm sinh viên tương ứng.
 
 ## Recommended IDE Setup
 
