@@ -6,7 +6,7 @@ defineProps([
 ]);
 
 import khongDau from "khong-dau";
-import { onMounted, ref } from "vue";
+import { ref } from "vue";
 
 import { useStudentSearchStore } from "@/stores/StudentSearch";
 const studentSearchStore = useStudentSearchStore();
@@ -16,15 +16,16 @@ const searchText = ref("");
 const searchDataFilter = ref(studentSearchData.value);
 
 const handleFilter = () => {
+  const searchValue = searchText.value.trim();
   searchDataFilter.value = studentSearchData.value.filter((student) => {
     return (
-      student.maHoXo.includes(searchText.value) ||
-      student.hoTen.includes(searchText.value) ||
-      student.ngaySinh.includes(searchText.value) ||
-      student.nganh.includes(searchText.value) ||
+      student.maHoXo.includes(searchValue) ||
+      student.hoTen.includes(searchValue) ||
+      student.ngaySinh.includes(searchValue) ||
+      student.nganh.includes(searchValue) ||
       khongDau(student.hoTen)
         .toUpperCase()
-        .includes(khongDau(searchText.value).toUpperCase())
+        .includes(khongDau(searchValue).toUpperCase())
     );
   });
 };
@@ -41,7 +42,7 @@ const handleFilter = () => {
       <input
         type="text"
         class="student-search-bar"
-        placeholder="Tìm kiếm bằng tên, mã lớp, ngày sinh, ..."
+        placeholder="Tìm kiếm bằng bất cứ trường thông tin nào, kể cả không dấu, viết thường"
         v-model="searchText"
         @keyup.enter="handleFilter"
       />

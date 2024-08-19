@@ -1,7 +1,10 @@
 <script setup>
 import "@/assets/StudentSearch.css";
 import { ref, computed, onMounted, nextTick } from "vue";
+
+// Service import
 import textRetrievalTool from "@/services/fullnameRetrieval";
+import clientInput from "@/services/clientInput";
 
 // Store import
 import { useStudentSearchStore } from "@/stores/StudentSearch";
@@ -35,15 +38,7 @@ const handleSearchChooseStudent = (student) => {
 
   // Change UI
   // Get current table row by data-id
-  const currentTableRows = document.querySelector(
-    `.table-row[data-id="${currentSearchStudent.value.id}"]`
-  );
-
-  const oldBackgroundColor = currentTableRows.style.backgroundColor;
-  currentTableRows.style.backgroundColor = "#f7fee7";
-  setTimeout(() => {
-    currentTableRows.style.backgroundColor = oldBackgroundColor;
-  }, 1000);
+  handleChangeUI(currentSearchStudent.value.id);
 
   togglePopupStudentSearch();
 };
@@ -85,46 +80,31 @@ const numOfNoStudentInfo = computed(() => {
 });
 
 // Handle main action
-const handleMessageInput = () => {
+const handleMessageInput = async () => {
   try {
-    navigator.clipboard.readText().then((text) => {
-      if (text.trim() === "") {
-        alert("Clipboard is empty");
-        return;
-      }
+    const text = await navigator.clipboard.readText();
+    if (text.trim() === "") {
+      alert("Clipboard is empty");
+      return;
+    }
+    const preCheckData = clientInput.getMessageInputExcel(text);
+
+    const emptyMessage = preCheckData.find((item) => item.message === "");
+    if (emptyMessage) {
+      alert("Có tồn tại tin nhắn trống, vui lòng kiểm tra lại");
+      return;
+    }
+
+    const confirmMessage = confirm(
+      `Đã tìm thấy ${preCheckData.length} tin nhắn, bạn có muốn tiếp tục?`
+    );
+    if (confirmMessage) {
       rawMessage.value = text;
-      tableData.value = text.split("\n").map((message, index) => {
-        return {
-          id: index,
-          message,
-          name: "",
-          studentInfo: [],
-        };
-      });
-      const lastElement = tableData.value[tableData.value.length - 1];
-      if (lastElement.message === "") {
-        tableData.value.pop();
-      }
-
-      const emptyMessage = tableData.value.find((item) => item.message === "");
-      if (emptyMessage) {
-        alert("Có tồn tại tin nhắn trống, vui lòng kiểm tra lại");
-        rawMessage.value = "";
-        tableData.value = [];
-        return;
-      }
-
-      // confirm to input message with num of message
-      const confirmMessage = confirm(
-        `Đã tìm thấy ${tableData.value.length} tin nhắn, bạn có muốn tiếp tục?`
-      );
-      if (!confirmMessage) {
-        rawMessage.value = "";
-        tableData.value = [];
-      }
-    });
+      tableData.value = preCheckData;
+    }
   } catch (error) {
-    alert("Error reading clipboard data");
+    alert("Có lỗi xảy ra khi đọc dữ liệu");
+    console.log(error);
   }
 };
 
@@ -189,21 +169,35 @@ const handleChooseStudent = (event, row, chooseStudent) => {
 
   // Change UI
   // Get current table row by data-id
-  const currentTableRows = document.querySelector(
-    `.table-row[data-id="${row.id}"]`
-  );
-
-  const oldBackgroundColor = currentTableRows.style.backgroundColor;
-  currentTableRows.style.backgroundColor = "#f7fee7";
-  setTimeout(() => {
-    currentTableRows.style.backgroundColor = oldBackgroundColor;
-  }, 1000);
+  handleChangeUI(row.id);
 
   nextTick(() => {
     const newRowOffsetTop = rowElement.offsetTop;
     const scrollDifference = newRowOffsetTop - initialRowOffsetTop;
     tableElement.scrollTop = initialScrollTop + scrollDifference;
   });
+};
+
+const handleDeleteOneStudent = (tableDataElementId) => {
+  tableData.value.forEach((item) => {
+    if (item.id === tableDataElementId) {
+      item.studentInfo = [];
+    }
+  });
+
+  handleChangeUI(tableDataElementId, "#fef2f2");
+};
+
+const handleChangeUI = (tableDataElementId, backgroundColor = "#f7fee7") => {
+  const currentTableRows = document.querySelector(
+    `.table-row[data-id="${tableDataElementId}"]`
+  );
+
+  const oldBackgroundColor = currentTableRows.style.backgroundColor;
+  currentTableRows.style.backgroundColor = backgroundColor;
+  setTimeout(() => {
+    currentTableRows.style.backgroundColor = oldBackgroundColor;
+  }, 1000);
 };
 
 const handleExportData = () => {
@@ -267,7 +261,9 @@ onMounted(() => {
       <div class="table">
         <table>
           <tr>
-            <th>Tin nhắn giao dịch <br />{{ `${tableData.length} 💬` }}</th>
+            <th>Ngày hiệu lực</th>
+            <th>Ghi có</th>
+            <th>Mô tả giao dịch <br />{{ `${tableData.length} 💬` }}</th>
             <th>
               Tên trích xuất<br />{{
                 `${numOfExtractedName} ✅ | ${numOfNullName} ⚠️ | ${numOfErrorName} 🚫`
@@ -286,23 +282,34 @@ onMounted(() => {
             :key="index + 'y'"
             :data-id="data.id"
           >
+            <td>{{ data.date }}</td>
+            <td>{{ data.money }}</td>
             <td>{{ data.message }}</td>
             <td>{{ data.name }}</td>
             <td>
               <div class="student-box">
                 <div v-if="data.studentInfo.length === 0">
                   <div class="student-no-item">
-                    <td>Không tìm thấy</td>
+                    <td>Bỏ trống hoặc không tìm thấy</td>
                   </div>
                 </div>
 
-                <div v-if="data.studentInfo.length === 1">
+                <div
+                  class="student-one-item-box"
+                  v-if="data.studentInfo.length === 1"
+                >
                   <div class="student-one-item">
                     <td>{{ data.studentInfo[0].maHoXo }}</td>
                     <td>{{ data.studentInfo[0].hoTen }}</td>
                     <td>{{ data.studentInfo[0].ngaySinh }}</td>
                     <td>{{ data.studentInfo[0].nganh }}</td>
                   </div>
+                  <button
+                    class="delete-one-student"
+                    @click="handleDeleteOneStudent(data.id)"
+                  >
+                    ❌
+                  </button>
                 </div>
 
                 <tr

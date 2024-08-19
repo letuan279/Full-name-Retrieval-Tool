@@ -54,26 +54,41 @@
     font-weight: bold;
     position: sticky;
     top: 0;
+    z-index: 1;
 }
 
+/* Ngày hiệu lực */
 .content .table th:nth-child(1) {
-    width: 50%;
+    width: 10%;
 }
 
-.content .table td:nth-child(1) {
+/* Ghi có */
+.content .table th:nth-child(2) {
+    width: 8%;
+}
+
+/* Mô tả giao dịch */
+.content .table th:nth-child(3) {
+    width: 35%;
+}
+
+.content .table td:nth-child(3) {
     text-align: left;
 }
 
-.content .table th:nth-child(2) {
-    width: 13%;
-}
-
-.content .table th:nth-child(3) {
-    width: 33%;
-}
-
+/* Tên trích xuất */
 .content .table th:nth-child(4) {
-    width: 4%;
+    width: 12%;
+}
+
+/* Thông tin sinh viên */
+.content .table th:nth-child(5) {
+    width: 30%;
+}
+
+/* Search */
+.content .table th:nth-child(6) {
+    width: 5%;
 }
 
 .table-row {
@@ -87,8 +102,29 @@
     font-size: small;
 }
 
+.student-one-item-box {
+    position: relative;
+}
+
 .student-one-item {
     background: #f7fee7;
+}
+
+.delete-one-student {
+    position: absolute;
+    top: -9px;
+    right: -9px;
+
+    border: none;
+    background: none;
+    user-select: none;
+    padding: 2px;
+    margin: 0;
+}
+
+.delete-one-student:hover {
+    cursor: pointer;
+    scale: 1.3;
 }
 
 .student-no-item {
