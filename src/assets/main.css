@@ -1,27 +1,28 @@
 @import './base.css';
 
-html {
-    -webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
+/* Base button */
+button {
+    user-select: none;
 }
 
 .btn {
-    background: #fef3c7;
+    background: var(--color-btn-bg);
     font-weight: bold;
     font-size: 20px;
+    color: var(--color-heading);
     display: block;
     margin: 10px auto 0;
     min-width: 150px;
     height: 40px;
-    border: 1px solid #e7e5e4;
+    border: 1px solid var(--color-btn-border);
     border-radius: 10px;
     transition: all 0.1s;
 }
 
 .btn:hover {
-    background: #e7e5e4;
+    background: var(--color-btn-bg-hover);
     cursor: pointer;
-    transform: scale(1.05);
+    /* transform: scale(1.05); */
 }
 
 .btn:disabled {

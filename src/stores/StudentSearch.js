@@ -36,7 +36,6 @@ export const useStudentSearchStore = defineStore('studentSearch', () => {
     watch(studentInfo, () => {
         storeStudentInfo()
         updateSearchTool()
-        console.log(searchTool.value);
     })
 
     const getStudentInfoByName = (name) => {

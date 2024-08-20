@@ -1,6 +1,6 @@
 <script setup>
 import "@/assets/StudentSearch.css";
-import { ref, computed, onMounted, nextTick } from "vue";
+import { ref, computed, onMounted, onBeforeMount, nextTick } from "vue";
 
 // Service import
 import textRetrievalTool from "@/services/fullnameRetrieval";
@@ -44,6 +44,11 @@ const handleSearchChooseStudent = (student) => {
 };
 
 // Refs
+const theme = ref(
+  Array.from(["dark", "light"]).includes(localStorage.getItem("theme"))
+    ? localStorage.getItem("theme")
+    : "light"
+);
 const tableData = ref(studentSearchStore.tableData);
 const rawMessage = ref("");
 const isExtractingName = ref(false);
@@ -80,6 +85,12 @@ const numOfNoStudentInfo = computed(() => {
 });
 
 // Handle main action
+const toggleTheme = () => {
+  theme.value = theme.value === "light" ? "dark" : "light";
+  localStorage.setItem("theme", theme.value);
+  document.documentElement.setAttribute("data-theme", theme.value);
+};
+
 const handleMessageInput = async () => {
   try {
     const text = await navigator.clipboard.readText();
@@ -185,18 +196,24 @@ const handleDeleteOneStudent = (tableDataElementId) => {
     }
   });
 
-  handleChangeUI(tableDataElementId, "#fef2f2");
+  handleChangeUI(tableDataElementId, "var(--color-delete-row-bg)");
 };
 
-const handleChangeUI = (tableDataElementId, backgroundColor = "#f7fee7") => {
+const handleChangeUI = (
+  tableDataElementId,
+  backgroundColor = "var(--color-add-row-bg)"
+) => {
   const currentTableRows = document.querySelector(
     `.table-row[data-id="${tableDataElementId}"]`
   );
 
   const oldBackgroundColor = currentTableRows.style.backgroundColor;
+  const oldColor = currentTableRows.style.color;
   currentTableRows.style.backgroundColor = backgroundColor;
+  currentTableRows.style.color = "var(--color-heading)";
   setTimeout(() => {
     currentTableRows.style.backgroundColor = oldBackgroundColor;
+    currentTableRows.style.color = oldColor;
   }, 1000);
 };
 
@@ -237,9 +254,19 @@ const handleExportData = () => {
 // Load data from local
 onMounted(() => {
   try {
+    // Load student info
     studentSearchStore.loadStudentInfo();
   } catch (error) {
-    alert("Error loading student data from local: ", error.message);
+    alert("Error loading data from local: ", error.message);
+  }
+});
+
+onBeforeMount(() => {
+  try {
+    // Load theme
+    document.documentElement.setAttribute("data-theme", theme.value);
+  } catch (error) {
+    alert("Error loading theme from local: ", error.message);
   }
 });
 </script>
@@ -255,6 +282,30 @@ onMounted(() => {
         <button @click="handleMessageInput">📨 Nhập dữ liệu tin nhắn</button>
         <button @click="handleExtractName">⚗️ Trích xuất tên</button>
         <button @click="handleExportData">💾 Xuất dữ liệu</button>
+        <button id="theme-toggle-btn" @click="toggleTheme">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="24px"
+            viewBox="0 -960 960 960"
+            width="24px"
+            fill="#000000"
+          >
+            <path
+              d="M480-120q-150 0-255-105T120-480q0-150 105-255t255-105q14 0 27.5 1t26.5 3q-41 29-65.5 75.5T444-660q0 90 63 153t153 63q55 0 101-24.5t75-65.5q2 13 3 26.5t1 27.5q0 150-105 255T480-120Zm0-80q88 0 158-48.5T740-375q-20 5-40 8t-40 3q-123 0-209.5-86.5T364-660q0-20 3-40t8-40q-78 32-126.5 102T200-480q0 116 82 198t198 82Zm-10-270Z"
+            />
+          </svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="24px"
+            viewBox="0 -960 960 960"
+            width="24px"
+            fill="#000000"
+          >
+            <path
+              d="M480-360q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35Zm0 80q-83 0-141.5-58.5T280-480q0-83 58.5-141.5T480-680q83 0 141.5 58.5T680-480q0 83-58.5 141.5T480-280ZM200-440H40v-80h160v80Zm720 0H760v-80h160v80ZM440-760v-160h80v160h-80Zm0 720v-160h80v160h-80ZM256-650l-101-97 57-59 96 100-52 56Zm492 496-97-101 53-55 101 97-57 59Zm-98-550 97-101 59 57-100 96-56-52ZM154-212l101-97 55 53-97 101-59-57Zm326-268Z"
+            />
+          </svg>
+        </button>
       </div>
     </div>
     <div class="content">
@@ -357,22 +408,4 @@ onMounted(() => {
   <div class="spinner" v-if="isExtractingName"></div>
 </template>
 
-<style scoped>
-/* CSS btn */
-.panel-btn {
-  margin-top: 5px;
-  display: flex;
-  justify-content: space-evenly;
-}
-
-.panel-btn button {
-  padding: 5px 10px;
-  border: 2px solid #ccc;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.panel-btn button:hover {
-  background-color: #e6f7d7;
-}
-</style>
+<style scoped></style>
