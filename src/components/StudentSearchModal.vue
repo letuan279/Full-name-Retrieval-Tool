@@ -5,6 +5,8 @@ defineProps([
   "handleSearchChooseStudent",
 ]);
 
+import "@/assets/StudentSearchModal.css";
+
 import khongDau from "khong-dau";
 import { ref } from "vue";
 
@@ -70,95 +72,4 @@ const handleFilter = () => {
   </div>
 </template>
 
-<style scoped>
-.popup {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 99;
-  background-color: rgba(0, 0, 0, 0.2);
-  height: 100vh;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.popup-inner {
-  position: relative;
-  background: #fff;
-  width: 60%;
-  height: fit-content;
-  padding: 12px 32px;
-  border-radius: 10px;
-}
-
-.popup-heading {
-  font-weight: bold;
-  text-align: center;
-  font-size: 40px;
-}
-
-.popup-close {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  padding: 0;
-  background: transparent;
-  color: #fff;
-  font-size: 20px;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-.popup-close:hover {
-  transform: scale(1.2);
-}
-
-.current-message {
-  border: 1px solid #000;
-  padding: 2px 3px;
-  margin-top: 5px;
-  font-weight: 500;
-}
-
-.student-search-bar {
-  display: block;
-  width: 80%;
-  margin: 12px auto;
-  padding: 5px 10px;
-  border-radius: 10px;
-}
-
-.student-result {
-  display: ruby-text;
-  width: 100%;
-  height: 450px;
-  overflow-y: auto;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
-
-.student-result th {
-  background-color: #f2f2f2;
-  font-weight: bold;
-  position: sticky;
-  top: 0;
-}
-
-.student-result th,
-.student-result td {
-  border: 1px solid #000;
-  padding: 8px;
-  text-align: center;
-}
-
-.student-box-item:hover {
-  cursor: pointer;
-  background: #f7fee7;
-  text-decoration: underline;
-}
-</style>
+<style scoped></style>
