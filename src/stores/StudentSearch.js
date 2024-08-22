@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, watch } from 'vue';
 
-import khongDau from 'khong-dau'
+import khongDau from '@/utils/khongDau';
 
 import clientInput from '@/services/clientInput';
 
@@ -16,10 +16,16 @@ export const useStudentSearchStore = defineStore('studentSearch', () => {
 
     const storeStudentInfo = () => {
         localStorage.setItem('studentInfo', JSON.stringify(studentInfo.value))
+        setTimeout(() => {
+            updateSearchTool()
+        }, 0)
     }
 
     const loadStudentInfo = () => {
         studentInfo.value = JSON.parse(localStorage.getItem("studentInfo") || "[]");
+        setTimeout(() => {
+            updateSearchTool()
+        }, 0)
     }
 
     const updateSearchTool = () => {
@@ -35,14 +41,12 @@ export const useStudentSearchStore = defineStore('studentSearch', () => {
 
     watch(studentInfo, () => {
         storeStudentInfo()
-        updateSearchTool()
     })
 
     const getStudentInfoByName = (name) => {
         if (searchTool.value.has(name)) {
             return searchTool.value.get(name)
         }
-
         return []
     }
 
@@ -53,6 +57,6 @@ export const useStudentSearchStore = defineStore('studentSearch', () => {
         loadStudentInfo,
         searchTool,
         getStudentInfoByName,
-        tableData
+        tableData,
     }
 })

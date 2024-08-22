@@ -13,10 +13,10 @@ class ClientInput {
             const lineData = line.split(/\t+/)
             return {
                 id: index + 1,
-                maHoXo: lineData[0]?.trim() ?? "",
-                hoTen: lineData[1]?.trim() ?? "",
-                ngaySinh: lineData[2]?.trim() ?? "",
-                nganh: lineData[3]?.trim() ?? "",
+                maHoXo: lineData[0]?.trim()?.normalize() ?? "",
+                hoTen: lineData[1]?.trim()?.normalize() ?? "",
+                ngaySinh: lineData[2]?.trim()?.normalize() ?? "",
+                nganh: lineData[3]?.trim()?.normalize() ?? "",
             }
         })
     }
