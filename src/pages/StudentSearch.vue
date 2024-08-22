@@ -1,6 +1,6 @@
 <script setup>
 import "@/assets/StudentSearch.css";
-import { ref, computed, onMounted, onBeforeMount, nextTick } from "vue";
+import { ref, computed, onMounted, onBeforeMount, nextTick, watch } from "vue";
 
 // Service import
 import textRetrievalTool from "@/services/fullnameRetrieval";
@@ -50,7 +50,6 @@ const theme = ref(
     : "light"
 );
 const tableData = ref(studentSearchStore.tableData);
-const rawMessage = ref("");
 const isExtractingName = ref(false);
 
 // Computed
@@ -110,7 +109,6 @@ const handleMessageInput = async () => {
       `Đã tìm thấy ${preCheckData.length} tin nhắn, bạn có muốn tiếp tục?`
     );
     if (confirmMessage) {
-      rawMessage.value = text;
       tableData.value = preCheckData;
     }
   } catch (error) {
@@ -124,7 +122,7 @@ const handleExtractName = async () => {
     return;
   }
 
-  if (rawMessage.value.trim() === "") {
+  if (tableData.value.length === 0) {
     alert("Không có dữ liệu tin nhắn để trích xuất");
     return;
   }
@@ -251,10 +249,19 @@ const handleExportData = () => {
   }
 };
 
+const loadTableData = () => {
+  tableData.value = localStorage.getItem("tableData")
+    ? JSON.parse(localStorage.getItem("tableData"))
+    : [];
+};
+
+const storeTableData = () => {
+  localStorage.setItem("tableData", JSON.stringify(tableData.value));
+};
+
 // Load data from local
 onMounted(() => {
   try {
-    // Load student info
     studentSearchStore.loadStudentInfo();
   } catch (error) {
     alert("Error loading data from local: ", error.message);
@@ -265,10 +272,21 @@ onBeforeMount(() => {
   try {
     // Load theme
     document.documentElement.setAttribute("data-theme", theme.value);
+    loadTableData();
   } catch (error) {
     alert("Error loading theme from local: ", error.message);
   }
 });
+
+watch(
+  tableData,
+  () => {
+    setTimeout(() => {
+      storeTableData();
+    }, 0);
+  },
+  { deep: true }
+);
 </script>
 
 <template>

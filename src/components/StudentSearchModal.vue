@@ -6,8 +6,8 @@ defineProps([
 ]);
 
 import "@/assets/StudentSearchModal.css";
+import khongDau from "@/utils/khongDau";
 
-import khongDau from "khong-dau";
 import { ref } from "vue";
 
 import { useStudentSearchStore } from "@/stores/StudentSearch";
@@ -50,6 +50,7 @@ const handleFilter = () => {
       />
       <table class="student-result">
         <tr>
+          <th>STT</th>
           <th>Mã</th>
           <th>Họ tên</th>
           <th>Ngày sinh</th>
@@ -62,6 +63,7 @@ const handleFilter = () => {
           :key="i + 'h'"
           @click="handleSearchChooseStudent(student)"
         >
+          <td>{{ i + 1 }}</td>
           <td>{{ student.maHoXo }}</td>
           <td>{{ student.hoTen }}</td>
           <td>{{ student.ngaySinh }}</td>
