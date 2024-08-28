@@ -8,7 +8,7 @@ defineProps([
 import "@/assets/StudentSearchModal.css";
 import khongDau from "@/utils/khongDau";
 
-import { ref } from "vue";
+import { ref, watch } from "vue";
 
 import { useStudentSearchStore } from "@/stores/StudentSearch";
 const studentSearchStore = useStudentSearchStore();
@@ -31,6 +31,15 @@ const handleFilter = () => {
     );
   });
 };
+
+// Implement search realtime each 200ms
+let timer = null;
+watch(searchText, () => {
+  clearTimeout(timer);
+  timer = setTimeout(() => {
+    handleFilter();
+  }, 200);
+});
 </script>
 
 <template>
@@ -48,28 +57,30 @@ const handleFilter = () => {
         v-model="searchText"
         @keyup.enter="handleFilter"
       />
-      <table class="student-result">
-        <tr>
-          <th>STT</th>
-          <th>Mã</th>
-          <th>Họ tên</th>
-          <th>Ngày sinh</th>
-          <th>Ngành</th>
-        </tr>
+      <div class="student-result">
+        <table>
+          <tr>
+            <th>STT</th>
+            <th>Mã</th>
+            <th>Họ tên</th>
+            <th>Ngày sinh</th>
+            <th>Ngành</th>
+          </tr>
 
-        <tr
-          v-for="(student, i) in searchDataFilter"
-          class="student-box-item"
-          :key="i + 'h'"
-          @click="handleSearchChooseStudent(student)"
-        >
-          <td>{{ i + 1 }}</td>
-          <td>{{ student.maHoXo }}</td>
-          <td>{{ student.hoTen }}</td>
-          <td>{{ student.ngaySinh }}</td>
-          <td>{{ student.nganh }}</td>
-        </tr>
-      </table>
+          <tr
+            v-for="(student, i) in searchDataFilter"
+            class="student-box-item"
+            :key="i + 'h'"
+            @click="handleSearchChooseStudent(student)"
+          >
+            <td>{{ i + 1 }}</td>
+            <td>{{ student.maHoXo }}</td>
+            <td>{{ student.hoTen }}</td>
+            <td>{{ student.ngaySinh }}</td>
+            <td>{{ student.nganh }}</td>
+          </tr>
+        </table>
+      </div>
     </div>
   </div>
 </template>
