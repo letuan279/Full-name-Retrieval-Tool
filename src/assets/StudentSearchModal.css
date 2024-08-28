@@ -68,12 +68,17 @@
 }
 
 .student-result {
-  display: block;
   width: 100%;
   height: 350px;
   overflow-y: auto;
   border-collapse: collapse;
   margin-top: 10px;
+}
+
+.student-result table {
+  margin: 0 auto;  
+  width: 100%;
+  border-collapse: collapse;
 }
 
 .student-result th {
