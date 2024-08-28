@@ -8,15 +8,29 @@ defineProps([
 import "@/assets/StudentSearchModal.css";
 import khongDau from "@/utils/khongDau";
 
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 
 import { useStudentSearchStore } from "@/stores/StudentSearch";
 const studentSearchStore = useStudentSearchStore();
 
+// Ref
 const studentSearchData = ref(studentSearchStore.studentInfo);
 const searchText = ref("");
 const searchDataFilter = ref(studentSearchData.value);
+const currentPage = ref(1);
+const itemsPerPage = ref(10);
 
+// Computed
+const totalPages = computed(() => {
+  return Math.ceil(searchDataFilter.value.length / itemsPerPage.value);
+});
+const paginatedData = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value;
+  const end = start + itemsPerPage.value;
+  return searchDataFilter.value.slice(start, end);
+});
+
+// Handle action
 const handleFilter = () => {
   const searchValue = searchText.value.trim();
   searchDataFilter.value = studentSearchData.value.filter((student) => {
@@ -30,6 +44,7 @@ const handleFilter = () => {
         .includes(khongDau(searchValue).toUpperCase())
     );
   });
+  currentPage.value = 1;
 };
 
 // Implement search realtime each 200ms
@@ -68,18 +83,37 @@ watch(searchText, () => {
           </tr>
 
           <tr
-            v-for="(student, i) in searchDataFilter"
+            v-for="(student, i) in paginatedData"
             class="student-box-item"
             :key="i + 'h'"
             @click="handleSearchChooseStudent(student)"
           >
-            <td>{{ i + 1 }}</td>
+            <td>{{ i + 1 + (currentPage - 1) * itemsPerPage }}</td>
             <td>{{ student.maHoXo }}</td>
             <td>{{ student.hoTen }}</td>
             <td>{{ student.ngaySinh }}</td>
             <td>{{ student.nganh }}</td>
           </tr>
         </table>
+      </div>
+      <div class="pagination">
+        <button
+          class="pagination-btn"
+          @click="currentPage--"
+          :disabled="currentPage === 1"
+        >
+          ◀
+        </button>
+        <span class="pagination-text"
+          >Trang thứ {{ currentPage }} / {{ totalPages }}</span
+        >
+        <button
+          class="pagination-btn"
+          @click="currentPage++"
+          :disabled="currentPage === totalPages"
+        >
+          ▶
+        </button>
       </div>
     </div>
   </div>
