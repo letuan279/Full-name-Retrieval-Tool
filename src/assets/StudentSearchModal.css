@@ -68,9 +68,9 @@
 }
 
 .student-result {
-  display: ruby-text;
+  display: block;
   width: 100%;
-  height: 450px;
+  height: 350px;
   overflow-y: auto;
   border-collapse: collapse;
   margin-top: 10px;
