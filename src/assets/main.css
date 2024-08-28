@@ -1,31 +1,59 @@
-@import './base.css';
+@import "./base.css";
 
 /* Base button */
 button {
-    user-select: none;
+  user-select: none;
 }
 
 .btn {
-    background: var(--color-btn-bg);
-    font-weight: bold;
-    font-size: 20px;
-    color: var(--color-heading);
-    display: block;
-    margin: 10px auto 0;
-    min-width: 150px;
-    height: 40px;
-    border: 1px solid var(--color-btn-border);
-    border-radius: 10px;
-    transition: all 0.1s;
+  background: var(--color-btn-bg);
+  font-weight: bold;
+  font-size: 20px;
+  color: var(--color-heading);
+  display: block;
+  margin: 10px auto 0;
+  min-width: 150px;
+  height: 40px;
+  border: 1px solid var(--color-btn-border);
+  border-radius: 10px;
+  transition: all 0.1s;
 }
 
 .btn:hover {
-    background: var(--color-btn-bg-hover);
-    cursor: pointer;
-    /* transform: scale(1.05); */
+  background: var(--color-btn-bg-hover);
+  cursor: pointer;
+  /* transform: scale(1.05); */
 }
 
 .btn:disabled {
-    background: #e7e5e4;
-    cursor: not-allowed;
+  background: #e7e5e4;
+  cursor: not-allowed;
 }
+
+/* ---------------------------Scrollbar----------------------------- */
+
+/* width */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    --scrollbar-width: 10px;
+
+  background: var(--color-btn-bg);
+  border-radius: calc(var(--scrollbar-width) / 2);
+  width: var(--scrollbar-width);
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* ---------------------------End-Scrollbar------------------------- */

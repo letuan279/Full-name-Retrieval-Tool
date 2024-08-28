@@ -117,37 +117,28 @@
   z-index: 1;
 }
 
-/* Ngày hiệu lực */
-.content .table th:nth-child(1) {
+.content .table th.row-stt {
+  width: 4%;
+}
+.content .table th.row-date {
   width: 8%;
 }
-
-/* Ghi có */
-.content .table th:nth-child(2) {
+.content .table th.row-money {
   width: 8%;
 }
-
-/* Mô tả giao dịch */
-.content .table th:nth-child(3) {
-  width: 34%;
+.content .table th.row-message {
+  width: 25%; 
 }
-
-.content .table td:nth-child(3) {
-  text-align: left;
+.content .table .row-message-body {
+  text-align: left; 
 }
-
-/* Tên trích xuất */
-.content .table th:nth-child(4) {
-  width: 15%;
+.content .table th.row-name-retrieve {
+  width: 20%;
 }
-
-/* Thông tin sinh viên */
-.content .table th:nth-child(5) {
+.content .table th.row-student {
   width: 30%;
 }
-
-/* Search */
-.content .table th:nth-child(6) {
+.content .table th.row-search {
   width: 5%;
 }
 

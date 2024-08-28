@@ -58,7 +58,7 @@ class TextRetrievalTool {
                 },
                 {
                     "role": "user",
-                    "content": "[{\"id\":0,\"message\":\"TKThe :0357485800, tai MSCBVNVX. XHB24401873 BUIMANHDUNG 05.10.20050357485800 -B2B020097042208092114262024S51Z828594\"}]"
+                    "content": "[{\"id\":0,\"message\":\"TKThe  tai MSCBVNVX XHB  BUIMANHDUNG    B  B  S  Z\"}]"
                 },
                 {
                     "role": "assistant",
@@ -66,11 +66,11 @@ class TextRetrievalTool {
                 },
                 {
                     "role": "user",
-                    "content": "[{\"id\":0,\"message\":\"TKThe :1040141644, tai VCB. MBVCB.6723772738.388355.CD46DL1, DinhQuocTuan Dong hoc phi ki 1 2024-2025 em xin phep nop truoc 6.000.000.CT tu 1040141644 DINH QUOC TUAN toi 12210001700374 TRUON-CTLNHIDI000009519203381-11-CRE-002\"},{\"id\":1,\"message\":\"TKThe :021233706666, tai MSCBVNVX. TO VIET ANH chuyen tien XHB24400210 To Viet Anh 02122006 0969843916 -B2B0200970422080810245120246N1M561029\"},{\"id\":2,\"message\":\"@3381881@CHUYEN TIEN GIANG DAY LOP 24NHLSP03 04\"},{\"id\":3,\"message\":\"REM 9901CI240621000007872 B/O BAO HIEM XA HOI QUAN DONG DA F/O-1221700374 TRUONG CAO DANG NGHE CONG NGHIEP HA NOI DTLS-REF/202406211010011000187701203003 HOAN DONG TRUNG BHYT HSSV THEO QD 533 NGAY 19/6/2024 .UNC 00353 Bank Charge .00 VAT .00\"},{\"id\":4,\"message\":\"1221700374 NGUYEN THANH DAT lop cd47oto5 ck HPHK1 nam hoc 2024.2025\"}]"
+                    "content": "[{\"id\":0,\"message\":\"TKThe  tai VCB MBVCB   CD  DL  DinhQuocTuan Dong hoc phi ki    em xin phep nop truoc    CT tu  DINH QUOC TUAN toi  TRUON CTLNHIDI   CRE\"},{\"id\":1,\"message\":\"TKThe  tai MSCBVNVX to viet anh chuyen tien XHB   B  B  N  M\"},{\"id\":2,\"message\":\"CHUYEN TIEN GIANG DAY LOP  NHLSP\"},{\"id\":3,\"message\":\"REM  CI  B O BAO HIEM XA HOI QUAN DONG DA F O  TRUONG CAO DANG NGHE CONG NGHIEP HA NOI DTLS REF  HOAN DONG TRUNG BHYT HSSV THEO QD  NGAY    UNC  Bank Charge  VAT\"},{\"id\":4,\"message\":\"NGUYEN THANH DAT lop cd  oto  ck HPHK  nam hoc\"},{\"id\":5,\"message\":\"TKThe  tai TCB Bui Hai Duong nop hoc phi FT  CTLNHIDI    CRE\"}]"
                 },
                 {
                     "role": "assistant",
-                    "content": "{\"results\": [{\"id\": 0, \"fullName\": \"DINH QUOC TUAN\"},{\"id\": 1, \"fullName\": \"TO VIET ANH\"},{\"id\": 2, \"fullName\": \"NULL\"},{\"id\": 3, \"fullName\": \"NULL\"},{\"id\": 4, \"fullName\": \"NGUYEN THANH DAT\"}]}"
+                    "content": "{\"results\": [{\"id\": 0, \"fullName\": \"DINH QUOC TUAN\"},{\"id\": 1, \"fullName\": \"TO VIET ANH\"},{\"id\": 2, \"fullName\": \"NULL\"},{\"id\": 3, \"fullName\": \"NULL\"},{\"id\": 4, \"fullName\": \"NGUYEN THANH DAT\"},{\"id\": 5, \"fullName\": \"BUI HAI DUONG\"}]}"
                 },
                 {
                     "role": "user",

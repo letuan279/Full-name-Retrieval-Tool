@@ -330,20 +330,23 @@ watch(
       <div class="table">
         <table>
           <tr>
-            <th>Ngày hiệu lực</th>
-            <th>Ghi có</th>
-            <th>Mô tả giao dịch <br />{{ `${tableData.length} 💬` }}</th>
-            <th>
+            <th class="row-stt">STT</th>
+            <th class="row-date">Ngày hiệu lực</th>
+            <th class="row-money">Ghi có</th>
+            <th class="row-message">
+              Mô tả giao dịch <br />{{ `${tableData.length} 💬` }}
+            </th>
+            <th class="row-name-retrieve">
               Tên trích xuất<br />{{
                 `${numOfExtractedName} ✅ | ${numOfNullName} ⚠️ | ${numOfErrorName} 🚫`
               }}
             </th>
-            <th>
+            <th class="row-student">
               Thông tin sinh viên<br />{{
                 `${numOfOneStudentInfo} 🙋🏻‍♂️ | ${numOfManyStudentInfo} 👨🏻‍👩🏻‍👦🏻‍👦🏻 | ${numOfNoStudentInfo} 👤`
               }}
             </th>
-            <th>👁️‍🗨️</th>
+            <th class="row-search">👁️‍🗨️</th>
           </tr>
           <tr
             class="table-row"
@@ -351,9 +354,10 @@ watch(
             :key="index + 'y'"
             :data-id="data.id"
           >
+            <td>{{ index + 1 }}</td>
             <td>{{ data.date }}</td>
             <td>{{ data.money }}</td>
-            <td>{{ data.message }}</td>
+            <td class="row-message-body">{{ data.message }}</td>
             <td>{{ data.name }}</td>
             <td>
               <div class="student-box">
