@@ -14,6 +14,10 @@ export const useStudentSearchStore = defineStore('studentSearch', () => {
         studentInfo.value = clientInput.getStudentInputExcel(data)
     }
 
+    const addMoreStudentInfo = (data) => {
+        studentInfo.value = studentInfo.value.concat(clientInput.getStudentInputExcel(data))
+    }
+
     const storeStudentInfo = () => {
         localStorage.setItem('studentInfo', JSON.stringify(studentInfo.value))
         setTimeout(() => {
@@ -53,6 +57,7 @@ export const useStudentSearchStore = defineStore('studentSearch', () => {
     return {
         studentInfo,
         setStudentInfo,
+        addMoreStudentInfo,
         storeStudentInfo,
         loadStudentInfo,
         searchTool,
