@@ -3,8 +3,6 @@ defineProps(["TogglePopup"]);
 
 import "@/assets/StudentInfoInputModal.css";
 
-import { computed } from "vue";
-
 import { useStudentSearchStore } from "@/stores/StudentSearch";
 const studentSearchStore = useStudentSearchStore();
 
@@ -23,6 +21,26 @@ const handleInfoInput = async () => {
     );
   } catch (error) {
     alert("Error reading clipboard data: ", error.message);
+    console.log(error.message);
+  }
+};
+
+const handleAddStudent = async () => {
+  try {
+    const text = await navigator.clipboard.readText();
+    if (
+      !confirm(
+        `Bạn có chắc chắn muốn thêm ${text.split("\n").length - 1} sinh viên?`
+      )
+    )
+      return;
+    studentSearchStore.addMoreStudentInfo(text);
+    alert(
+      `Đã thêm thành công, hiện đang có ${studentSearchStore.studentInfo.length} sinh viên`
+    );
+  } catch (error) {
+    alert("Error reading clipboard data: ", error.message);
+    console.log(error.message);
   }
 };
 </script>
@@ -56,7 +74,10 @@ const handleInfoInput = async () => {
         </table>
       </div>
       <div class="action">
-        <button class="btn" @click="handleInfoInput">👨‍🎓 Nhập thông tin</button>
+        <button class="btn" @click="handleInfoInput">
+          👨‍🎓 Nhập lại toàn bộ sv
+        </button>
+        <button class="btn" @click="handleAddStudent">✨ Thêm sv mới</button>
       </div>
     </div>
   </div>

@@ -127,7 +127,21 @@ const handleExtractName = async () => {
     return;
   }
 
+  if (
+    numOfExtractedName.value > 0 ||
+    numOfErrorName.value > 0 ||
+    numOfNullName.value > 0
+  ) {
+    const confirmExtract = confirm(
+      "Đang có các dữ liệu tên đã được trích xuất, bạn có muốn tiếp tục?"
+    );
+    if (!confirmExtract) {
+      return;
+    }
+  }
+
   isExtractingName.value = true;
+  handleClearExtractedInfo()
 
   const messages = textRetrievalTool.processMessagesWithId(tableData.value);
   for (let i = 0; i < messages.length; i += 10) {
@@ -160,6 +174,14 @@ const handleAddDataToTable = (data) => {
     // Add Student
     item.studentInfo = studentSearchStore.getStudentInfoByName(item.name);
 
+    return item;
+  });
+};
+
+const handleClearExtractedInfo = () => {
+  tableData.value = tableData.value.map((item) => {
+    item.studentInfo = [];
+    item.name = "";
     return item;
   });
 };
