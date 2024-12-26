@@ -188,6 +188,11 @@
   transition: all 0.5s;
 }
 
+.student-box-item--highlight {
+  outline: 3px solid yellow;
+  font-weight: bold;
+}
+
 .student-box-item:hover {
   cursor: pointer;
   background: var(--color-std-box-row-bg-hover);

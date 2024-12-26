@@ -5,6 +5,7 @@ import { ref, computed, onMounted, onBeforeMount, nextTick, watch } from "vue";
 // Service import
 import textRetrievalTool from "@/services/fullnameRetrieval";
 import clientInput from "@/services/clientInput";
+import { findBestMatch } from "@/services/textCompare";
 
 // Store import
 import { useStudentSearchStore } from "@/stores/StudentSearch";
@@ -62,8 +63,7 @@ const numOfErrorName = computed(() => {
 const numOfExtractedName = computed(() => {
   return (
     tableData.value.filter(
-      (item) =>
-        item.name !== "" && item.name !== "NULL" && item.name !== "ERROR"
+      (item) => item.name !== "NULL" && item.name !== "ERROR"
     ).length || 0
   );
 });
@@ -141,7 +141,7 @@ const handleExtractName = async () => {
   }
 
   isExtractingName.value = true;
-  handleClearExtractedInfo()
+  handleClearExtractedInfo();
 
   const messages = textRetrievalTool.processMessagesWithId(tableData.value);
   for (let i = 0; i < messages.length; i += 10) {
@@ -161,19 +161,18 @@ const handleExtractName = async () => {
   }
 
   isExtractingName.value = false;
+  findBestMatchInWholeTable();
 };
 
 const handleAddDataToTable = (data) => {
   tableData.value = tableData.value.map((item) => {
-    // Add Name
     const found = data.find((result) => result.id === item.id);
     if (found) {
+      // Add to extracted name column
       item.name = found.fullName.toUpperCase();
     }
-
-    // Add Student
+    // Add to student info column
     item.studentInfo = studentSearchStore.getStudentInfoByName(item.name);
-
     return item;
   });
 };
@@ -182,6 +181,7 @@ const handleClearExtractedInfo = () => {
   tableData.value = tableData.value.map((item) => {
     item.studentInfo = [];
     item.name = "";
+    item.bestMatchStudentIndex = null;
     return item;
   });
 };
@@ -281,12 +281,31 @@ const storeTableData = () => {
   localStorage.setItem("tableData", JSON.stringify(tableData.value));
 };
 
+const findBestMatchInWholeTable = () => {
+  tableData.value.forEach((item) => {
+    if (item.studentInfo.length >= 2) {
+      const mainString = item.message;
+      const targetStrings = item.studentInfo.map((student) => {
+        return (
+          student.maHoXo + student.hoTen + student.ngaySinh + student.nganh
+        );
+      });
+      item.bestMatchStudentIndex = findBestMatch(mainString, targetStrings);
+    }
+  });
+};
+
 // Load data from local
 onMounted(() => {
   try {
     studentSearchStore.loadStudentInfo();
+    () => {
+      setTimeout(() => {
+        findBestMatchInWholeTable();
+      }, 0);
+    };
   } catch (error) {
-    alert("Error loading data from local: ", error.message);
+    alert("Error when starting: ", error.message);
   }
 });
 
@@ -412,6 +431,10 @@ watch(
                   v-if="data.studentInfo.length > 1"
                   v-for="(student, i) in data.studentInfo"
                   @click="handleChooseStudent($event, data, student)"
+                  :class="{
+                    'student-box-item--highlight':
+                      data.bestMatchStudentIndex === i,
+                  }"
                   :key="i + 'z'"
                 >
                   <td>{{ student.maHoXo }}</td>
