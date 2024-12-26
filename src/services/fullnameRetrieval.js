@@ -108,7 +108,7 @@ class TextRetrievalTool {
                     console.error("All retries failed.");
                     return this.errorResult(JSON.parse(messages));
                 }
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(resolve => setTimeout(resolve, 1000));
             }
         }
     }
@@ -123,7 +123,7 @@ class TextRetrievalTool {
             const response = await this.callApiWithRetries(JSON.stringify(batch));
             results.push(...response.results);
             this.changeAPIKeyAndModel()
-
+            await new Promise(resolve => setTimeout(resolve, 1000));
             // Log progress
             console.log(`Processed ${Math.min(i + 10, messages.length)} out of ${messages.length} messages`);
         }
