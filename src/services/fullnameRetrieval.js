@@ -139,7 +139,7 @@ const apiKeys = Object.keys(import.meta.env)
     .filter(Boolean);
 
 const models = [
-    { id: "mixtral-8x7b-32768", context_window: 32768 },
+    // { id: "mixtral-8x7b-32768", context_window: 32768 },
     { id: "llama-3.1-8b-instant", context_window: 8000 },
     { id: "llama3-8b-8192", context_window: 8192 },
     { id: "llama3-groq-8b-8192-tool-use-preview", context_window: 8192 },
