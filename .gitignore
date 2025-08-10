@@ -31,3 +31,31 @@ coverage
 
 # Environment
 .env
+.env.local
+.env.production
+.env.development
+
+# IDE and OS
+.vscode/settings.json
+.vscode/launch.json
+.DS_Store
+Thumbs.db
+
+# Runtime and temporary files
+*.tmp
+*.temp
+.cache/
+.parcel-cache/
+
+# Build artifacts
+*.tgz
+*.tar.gz
+
+# Performance and debugging
+*.cpuprofile
+*.heapprofile
+
+# Package manager lock files (uncomment if you want to ignore them)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml

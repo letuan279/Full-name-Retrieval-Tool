@@ -1,13 +1,10 @@
 <script setup>
 import { ref, computed } from "vue";
-import FullnameRetrievalTool from "./pages/FullnameRetrievalTool.vue";
 import StudentSearch from "./pages/StudentSearch.vue";
 import NotFound from "./pages/NotFound.vue";
 
 const routes = {
   "/": StudentSearch,
-  // '/full-name-retrieval': FullnameRetrievalTool,
-  // '/student-search': StudentSearch
 };
 
 const currentPath = ref(window.location.pathname);
