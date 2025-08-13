@@ -30,6 +30,13 @@ button {
   cursor: not-allowed;
 }
 
+/* Dark theme button adjustments */
+[data-theme="dark"] .btn:disabled {
+  background: var(--color-background-mute);
+  color: var(--color-text-light);
+  border-color: var(--color-border);
+}
+
 /* ---------------------------Scrollbar----------------------------- */
 
 /* width */
@@ -39,21 +46,34 @@ button {
 
 /* Track */
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--color-background-soft);
 }
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-    --scrollbar-width: 10px;
-
-  background: var(--color-btn-bg);
+  --scrollbar-width: 10px;
+  background: var(--color-border);
   border-radius: calc(var(--scrollbar-width) / 2);
   width: var(--scrollbar-width);
+  transition: background 0.2s ease;
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: var(--color-border-hover);
+}
+
+/* Dark theme scrollbar adjustments */
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: var(--color-background-soft);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-light);
 }
 
 /* ---------------------------End-Scrollbar------------------------- */
