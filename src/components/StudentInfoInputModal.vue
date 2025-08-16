@@ -4,23 +4,41 @@ defineProps(["TogglePopup"]);
 import "@/assets/StudentInfoInputModal.css";
 
 import { useStudentSearchStore } from "@/stores/StudentSearch";
+import { ref, reactive } from "vue";
+import { MESSAGE_TYPES } from "@/config/constants";
+
 const studentSearchStore = useStudentSearchStore();
+
+// Notification System - Using Global Store
+import { useNotificationStore } from "@/stores/NotificationStore";
+const notificationStore = useNotificationStore();
+const {
+  showSuccess,
+  showError,
+  showConfirm,
+  handleConfirmResponse,
+  notifications,
+  confirmModal,
+} = notificationStore;
 
 const handleInfoInput = async () => {
   try {
     const text = await navigator.clipboard.readText();
-    if (
-      !confirm(
-        `Bạn có chắc chắn muốn nhập ${text.split("\n").length - 1} sinh viên?`
-      )
-    )
-      return;
+    const studentCount = text.split("\n").length - 1;
+
+    const confirmed = await showConfirm(
+      `Bạn có chắc chắn muốn nhập ${studentCount} sinh viên?`,
+      "Xác nhận nhập sinh viên"
+    );
+
+    if (!confirmed) return;
+
     studentSearchStore.setStudentInfo(text);
-    alert(
+    showSuccess(
       `Đã nhập thành công ${studentSearchStore.studentInfo.length} sinh viên`
     );
   } catch (error) {
-    alert("Error reading clipboard data: ", error.message);
+    showError(`Lỗi đọc dữ liệu: ${error.message}`);
     console.log(error.message);
   }
 };
@@ -28,18 +46,21 @@ const handleInfoInput = async () => {
 const handleAddStudent = async () => {
   try {
     const text = await navigator.clipboard.readText();
-    if (
-      !confirm(
-        `Bạn có chắc chắn muốn thêm ${text.split("\n").length - 1} sinh viên?`
-      )
-    )
-      return;
+    const studentCount = text.split("\n").length - 1;
+
+    const confirmed = await showConfirm(
+      `Bạn có chắc chắn muốn thêm ${studentCount} sinh viên?`,
+      "Xác nhận thêm sinh viên"
+    );
+
+    if (!confirmed) return;
+
     studentSearchStore.addMoreStudentInfo(text);
-    alert(
+    showSuccess(
       `Đã thêm thành công, hiện đang có ${studentSearchStore.studentInfo.length} sinh viên`
     );
   } catch (error) {
-    alert("Error reading clipboard data: ", error.message);
+    showError(`Lỗi đọc dữ liệu: ${error.message}`);
     console.log(error.message);
   }
 };
@@ -83,4 +104,6 @@ const handleAddStudent = async () => {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+/* Component specific styles */
+</style>

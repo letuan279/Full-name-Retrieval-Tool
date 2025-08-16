@@ -1,10 +1,23 @@
 import Groq from "groq-sdk";
+import { getApiConfig, validateApiConfig } from "@/config/api.js";
+import { STATUS } from "@/config/constants.js";
 
 class TextRetrievalTool {
-    constructor(apiKeys, models, temperature = 0.6) {
-        this.apiKeys = apiKeys;
-        this.models = models;
-        this.temperature = temperature;
+    constructor() {
+        validateApiConfig();
+        const config = getApiConfig();
+
+        this.apiKeys = config.GROQ.apiKeys;
+        this.models = config.GROQ.models;
+        this.temperature = config.GROQ.temperature;
+        this.batchSize = config.GROQ.batchSize;
+        this.retryAttempts = config.GROQ.retryAttempts;
+        this.retryDelay = config.GROQ.retryDelay;
+        this.maxTokens = config.GROQ.maxTokens;
+        this.topP = config.GROQ.topP;
+        this.stream = config.GROQ.stream;
+        this.responseFormat = config.GROQ.responseFormat;
+
         this.apiKeyIndex = 0;
         this.modelIndex = 0;
     }
@@ -40,7 +53,7 @@ class TextRetrievalTool {
 
     errorResult(messages) {
         return {
-            results: messages.map(message => ({ id: message.id, fullName: "ERROR" }))
+            results: messages.map(message => ({ id: message.id, fullName: STATUS.EXTRACTION.ERROR }))
         }
     }
 
@@ -79,36 +92,37 @@ class TextRetrievalTool {
             ],
             model: this.models[this.modelIndex].id,
             temperature: this.temperature,
-            max_tokens: this.models[this.modelIndex].context_window,
-            top_p: 1,
-            stream: false,
-            response_format: {
-                type: "json_object"
-            },
+            max_tokens: this.models[this.modelIndex].contextWindow,
+            top_p: this.topP,
+            stream: this.stream,
+            response_format: this.responseFormat,
             stop: null
         });
 
         return JSON.parse(results.choices[0].message.content);
     }
 
-    async callApiWithRetries(messages, retries = 3) {
-        while (retries > 0) {
+    async callApiWithRetries(messages, retries = null) {
+        const maxRetries = retries || this.retryAttempts;
+        let currentRetries = maxRetries;
+
+        while (currentRetries > 0) {
             try {
                 return await this.callApi(messages);
             } catch (error) {
                 console.log("---------------------------------");
                 console.error("Error message:", error.message);
-                console.error("API call failed. Retries left:", retries - 1);
+                console.error("API call failed. Retries left:", currentRetries - 1);
                 console.log("---------------------------------");
 
                 // Retry with a different API key and model
                 this.changeAPIKeyAndModel()
-                retries -= 1;
-                if (retries === 0) {
+                currentRetries -= 1;
+                if (currentRetries === 0) {
                     console.error("All retries failed.");
                     return this.errorResult(JSON.parse(messages));
                 }
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                await new Promise(resolve => setTimeout(resolve, this.retryDelay));
             }
         }
     }
@@ -118,33 +132,20 @@ class TextRetrievalTool {
 
         let results = [];
 
-        for (let i = 0; i < messages.length; i += 10) {
-            const batch = messages.slice(i, i + 10);
+        for (let i = 0; i < messages.length; i += this.batchSize) {
+            const batch = messages.slice(i, i + this.batchSize);
             const response = await this.callApiWithRetries(JSON.stringify(batch));
             results.push(...response.results);
             this.changeAPIKeyAndModel()
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, this.retryDelay));
             // Log progress
-            console.log(`Processed ${Math.min(i + 10, messages.length)} out of ${messages.length} messages`);
+            console.log(`Processed ${Math.min(i + this.batchSize, messages.length)} out of ${messages.length} messages`);
         }
 
         return results;
     }
 }
 
-// Usage
-const apiKeys = Object.keys(import.meta.env)
-    .filter(key => key.startsWith('VITE_API_KEY'))
-    .map(key => import.meta.env[key])
-    .filter(Boolean);
-
-const models = [
-    // { id: "mixtral-8x7b-32768", context_window: 32768 },
-    { id: "llama-3.1-8b-instant", context_window: 8000 },
-    { id: "llama3-8b-8192", context_window: 8192 },
-    { id: "llama3-groq-8b-8192-tool-use-preview", context_window: 8192 },
-    // { id: "llama-3.2-11b-vision-preview", context_window: 8192 }
-];
-
-const textRetrievalTool = new TextRetrievalTool(apiKeys, models);
+// Create and export singleton instance
+const textRetrievalTool = new TextRetrievalTool();
 export default textRetrievalTool;

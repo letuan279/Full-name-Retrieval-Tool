@@ -45,7 +45,7 @@ export const useStudentSearchStore = defineStore('studentSearch', () => {
 
     watch(studentInfo, () => {
         storeStudentInfo()
-    }, { deep: true })
+    })
 
     const getStudentInfoByName = (name) => {
         if (searchTool.value.has(name)) {
@@ -60,7 +60,6 @@ export const useStudentSearchStore = defineStore('studentSearch', () => {
         addMoreStudentInfo,
         storeStudentInfo,
         loadStudentInfo,
-        updateSearchTool,
         searchTool,
         getStudentInfoByName,
         tableData,
