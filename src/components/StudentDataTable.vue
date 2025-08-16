@@ -122,9 +122,15 @@ const handleDeleteSelected = async () => {
 
   if (confirmed) {
     const selectedIds = Array.from(selectedStudents.value);
-    studentSearchStore.studentInfo = studentSearchStore.studentInfo.filter(
-      (student) => !selectedIds.includes(student.id)
-    );
+    studentSearchStore.studentInfo = [
+      ...studentSearchStore.studentInfo.filter(
+        (student) => !selectedIds.includes(student.id)
+      ),
+    ];
+    // Update searchTool after modifying studentInfo
+    setTimeout(() => {
+      studentSearchStore.updateSearchTool();
+    }, 0);
     selectedStudents.value.clear();
     showSuccess(`Đã xóa ${selectedIds.length} sinh viên`);
   }
@@ -146,7 +152,12 @@ const handleSaveStudent = (updatedStudent) => {
   );
   if (index !== -1) {
     // Update the student in the store
-    studentSearchStore.studentInfo[index] = updatedStudent;
+    studentSearchStore.studentInfo[index] = { ...updatedStudent };
+
+    // Update searchTool after modifying studentInfo
+    setTimeout(() => {
+      studentSearchStore.updateSearchTool();
+    }, 0);
 
     // Store will automatically update due to watcher
     showSuccess(`Đã cập nhật thông tin sinh viên "${updatedStudent.hoTen}"`);
@@ -165,6 +176,12 @@ const handleDeleteStudent = async (student) => {
     );
     if (index !== -1) {
       studentSearchStore.studentInfo.splice(index, 1);
+      // Force reactivity by creating a new array reference
+      studentSearchStore.studentInfo = [...studentSearchStore.studentInfo];
+      // Update searchTool after modifying studentInfo
+      setTimeout(() => {
+        studentSearchStore.updateSearchTool();
+      }, 0);
       // Remove from selected if was selected
       selectedStudents.value.delete(student.id);
       showSuccess(`Đã xóa sinh viên "${student.hoTen}"`);
@@ -173,162 +190,212 @@ const handleDeleteStudent = async (student) => {
 };
 
 // Copy functions
-const copyStudentToClipboard = async (student, format = 'tab') => {
+const copyStudentToClipboard = async (student, format = "tab") => {
   try {
-    let studentData = '';
-    
+    let studentData = "";
+
     switch (format) {
-      case 'tab':
-        studentData = `${student.maHoXo}\t${student.hoTen}\t${student.ngaySinh}\t${student.nganh}\t${student.ghiChu || ''}`;
+      case "tab":
+        studentData = `${student.maHoXo}\t${student.hoTen}\t${
+          student.ngaySinh
+        }\t${student.nganh}\t${student.ghiChu || ""}`;
         break;
-      case 'csv':
-        studentData = `"${student.maHoXo}","${student.hoTen}","${student.ngaySinh}","${student.nganh}","${student.ghiChu || ''}"`;
+      case "csv":
+        studentData = `"${student.maHoXo}","${student.hoTen}","${
+          student.ngaySinh
+        }","${student.nganh}","${student.ghiChu || ""}"`;
         break;
-      case 'json':
+      case "json":
         studentData = JSON.stringify(student, null, 2);
         break;
-      case 'detailed':
-        studentData = `Mã Hồ Sơ: ${student.maHoXo}\nHọ Tên: ${student.hoTen}\nNgày Sinh: ${student.ngaySinh}\nNgành: ${student.nganh}\nGhi Chú: ${student.ghiChu || 'Không có'}`;
+      case "detailed":
+        studentData = `Mã Hồ Sơ: ${student.maHoXo}\nHọ Tên: ${
+          student.hoTen
+        }\nNgày Sinh: ${student.ngaySinh}\nNgành: ${student.nganh}\nGhi Chú: ${
+          student.ghiChu || "Không có"
+        }`;
         break;
-      case 'formatted':
-        studentData = `┌─────────────────────────────────────┐\n│           THÔNG TIN SINH VIÊN        │\n├─────────────────────────────────────┤\n│ Mã Hồ Sơ: ${student.maHoXo.padEnd(20)} │\n│ Họ Tên:   ${student.hoTen.padEnd(20)} │\n│ Ngày Sinh: ${student.ngaySinh.padEnd(18)} │\n│ Ngành:    ${student.nganh.padEnd(20)} │\n│ Ghi Chú:  ${(student.ghiChu || 'Không có').padEnd(20)} │\n└─────────────────────────────────────┘`;
+      case "formatted":
+        studentData = `┌─────────────────────────────────────┐\n│           THÔNG TIN SINH VIÊN        │\n├─────────────────────────────────────┤\n│ Mã Hồ Sơ: ${student.maHoXo.padEnd(
+          20
+        )} │\n│ Họ Tên:   ${student.hoTen.padEnd(
+          20
+        )} │\n│ Ngày Sinh: ${student.ngaySinh.padEnd(
+          18
+        )} │\n│ Ngành:    ${student.nganh.padEnd(20)} │\n│ Ghi Chú:  ${(
+          student.ghiChu || "Không có"
+        ).padEnd(20)} │\n└─────────────────────────────────────┘`;
         break;
       default:
-        studentData = `${student.maHoXo}\t${student.hoTen}\t${student.ngaySinh}\t${student.nganh}\t${student.ghiChu || ''}`;
+        studentData = `${student.maHoXo}\t${student.hoTen}\t${
+          student.ngaySinh
+        }\t${student.nganh}\t${student.ghiChu || ""}`;
     }
-    
+
     await navigator.clipboard.writeText(studentData);
-    showSuccess(`Đã copy thông tin sinh viên "${student.hoTen}" vào clipboard (${format.toUpperCase()})`);
+    showSuccess(
+      `Đã copy thông tin sinh viên "${
+        student.hoTen
+      }" vào clipboard (${format.toUpperCase()})`
+    );
   } catch (error) {
     showError("Không thể copy vào clipboard");
     console.error("Copy error:", error);
   }
 };
 
-const copySelectedStudentsToClipboard = async (format = 'tab') => {
+const copySelectedStudentsToClipboard = async (format = "tab") => {
   if (selectedStudents.value.size === 0) {
     showError("Chưa chọn sinh viên nào để copy");
     return;
   }
 
   try {
-    let clipboardData = '';
-    
+    let clipboardData = "";
+
     const selectedStudentsList = studentSearchStore.studentInfo.filter(
       (student) => selectedStudents.value.has(student.id)
     );
 
     switch (format) {
-      case 'tab':
+      case "tab":
         clipboardData = "Mã Hồ Sơ\tHọ Tên\tNgày Sinh\tNgành\tGhi Chú\n";
         selectedStudentsList.forEach((student) => {
-          clipboardData += `${student.maHoXo}\t${student.hoTen}\t${student.ngaySinh}\t${student.nganh}\t${student.ghiChu || ''}\n`;
+          clipboardData += `${student.maHoXo}\t${student.hoTen}\t${
+            student.ngaySinh
+          }\t${student.nganh}\t${student.ghiChu || ""}\n`;
         });
         break;
-      case 'csv':
+      case "csv":
         clipboardData = "Mã Hồ Sơ,Họ Tên,Ngày Sinh,Ngành,Ghi Chú\n";
         selectedStudentsList.forEach((student) => {
-          clipboardData += `"${student.maHoXo}","${student.hoTen}","${student.ngaySinh}","${student.nganh}","${student.ghiChu || ''}"\n`;
+          clipboardData += `"${student.maHoXo}","${student.hoTen}","${
+            student.ngaySinh
+          }","${student.nganh}","${student.ghiChu || ""}"\n`;
         });
         break;
-      case 'json':
+      case "json":
         clipboardData = JSON.stringify(selectedStudentsList, null, 2);
         break;
-      case 'detailed':
+      case "detailed":
         selectedStudentsList.forEach((student, index) => {
           clipboardData += `=== Sinh viên ${index + 1} ===\n`;
           clipboardData += `Mã Hồ Sơ: ${student.maHoXo}\n`;
           clipboardData += `Họ Tên: ${student.hoTen}\n`;
           clipboardData += `Ngày Sinh: ${student.ngaySinh}\n`;
           clipboardData += `Ngành: ${student.nganh}\n`;
-          clipboardData += `Ghi Chú: ${student.ghiChu || 'Không có'}\n\n`;
+          clipboardData += `Ghi Chú: ${student.ghiChu || "Không có"}\n\n`;
         });
         break;
-      case 'formatted':
+      case "formatted":
         selectedStudentsList.forEach((student, index) => {
           clipboardData += `┌─────────────────────────────────────┐\n`;
-          clipboardData += `│        SINH VIÊN ${(index + 1).toString().padStart(2, '0')}          │\n`;
+          clipboardData += `│        SINH VIÊN ${(index + 1)
+            .toString()
+            .padStart(2, "0")}          │\n`;
           clipboardData += `├─────────────────────────────────────┤\n`;
           clipboardData += `│ Mã Hồ Sơ: ${student.maHoXo.padEnd(20)} │\n`;
           clipboardData += `│ Họ Tên:   ${student.hoTen.padEnd(20)} │\n`;
           clipboardData += `│ Ngày Sinh: ${student.ngaySinh.padEnd(18)} │\n`;
           clipboardData += `│ Ngành:    ${student.nganh.padEnd(20)} │\n`;
-          clipboardData += `│ Ghi Chú:  ${(student.ghiChu || 'Không có').padEnd(20)} │\n`;
+          clipboardData += `│ Ghi Chú:  ${(student.ghiChu || "Không có").padEnd(
+            20
+          )} │\n`;
           clipboardData += `└─────────────────────────────────────┘\n\n`;
         });
         break;
       default:
         clipboardData = "Mã Hồ Sơ\tHọ Tên\tNgày Sinh\tNgành\tGhi Chú\n";
         selectedStudentsList.forEach((student) => {
-          clipboardData += `${student.maHoXo}\t${student.hoTen}\t${student.ngaySinh}\t${student.nganh}\t${student.ghiChu || ''}\n`;
+          clipboardData += `${student.maHoXo}\t${student.hoTen}\t${
+            student.ngaySinh
+          }\t${student.nganh}\t${student.ghiChu || ""}\n`;
         });
     }
 
     await navigator.clipboard.writeText(clipboardData);
-    showSuccess(`Đã copy ${selectedStudentsList.length} sinh viên đã chọn vào clipboard (${format.toUpperCase()})`);
+    showSuccess(
+      `Đã copy ${
+        selectedStudentsList.length
+      } sinh viên đã chọn vào clipboard (${format.toUpperCase()})`
+    );
   } catch (error) {
     showError("Không thể copy vào clipboard");
     console.error("Copy error:", error);
   }
 };
 
-const copyAllCurrentStudentsToClipboard = async (format = 'tab') => {
+const copyAllCurrentStudentsToClipboard = async (format = "tab") => {
   if (filteredStudents.value.length === 0) {
     showError("Không có dữ liệu sinh viên để copy");
     return;
   }
 
   try {
-    let clipboardData = '';
-    
+    let clipboardData = "";
+
     switch (format) {
-      case 'tab':
+      case "tab":
         clipboardData = "Mã Hồ Sơ\tHọ Tên\tNgày Sinh\tNgành\tGhi Chú\n";
         filteredStudents.value.forEach((student) => {
-          clipboardData += `${student.maHoXo}\t${student.hoTen}\t${student.ngaySinh}\t${student.nganh}\t${student.ghiChu || ''}\n`;
+          clipboardData += `${student.maHoXo}\t${student.hoTen}\t${
+            student.ngaySinh
+          }\t${student.nganh}\t${student.ghiChu || ""}\n`;
         });
         break;
-      case 'csv':
+      case "csv":
         clipboardData = "Mã Hồ Sơ,Họ Tên,Ngày Sinh,Ngành,Ghi Chú\n";
         filteredStudents.value.forEach((student) => {
-          clipboardData += `"${student.maHoXo}","${student.hoTen}","${student.ngaySinh}","${student.nganh}","${student.ghiChu || ''}"\n`;
+          clipboardData += `"${student.maHoXo}","${student.hoTen}","${
+            student.ngaySinh
+          }","${student.nganh}","${student.ghiChu || ""}"\n`;
         });
         break;
-      case 'json':
+      case "json":
         clipboardData = JSON.stringify(filteredStudents.value, null, 2);
         break;
-      case 'detailed':
+      case "detailed":
         filteredStudents.value.forEach((student, index) => {
           clipboardData += `=== Sinh viên ${index + 1} ===\n`;
           clipboardData += `Mã Hồ Sơ: ${student.maHoXo}\n`;
           clipboardData += `Họ Tên: ${student.hoTen}\n`;
           clipboardData += `Ngày Sinh: ${student.ngaySinh}\n`;
           clipboardData += `Ngành: ${student.nganh}\n`;
-          clipboardData += `Ghi Chú: ${student.ghiChu || 'Không có'}\n\n`;
+          clipboardData += `Ghi Chú: ${student.ghiChu || "Không có"}\n\n`;
         });
         break;
-      case 'formatted':
+      case "formatted":
         filteredStudents.value.forEach((student, index) => {
           clipboardData += `┌─────────────────────────────────────┐\n`;
-          clipboardData += `│        SINH VIÊN ${(index + 1).toString().padStart(2, '0')}          │\n`;
+          clipboardData += `│        SINH VIÊN ${(index + 1)
+            .toString()
+            .padStart(2, "0")}          │\n`;
           clipboardData += `├─────────────────────────────────────┤\n`;
           clipboardData += `│ Mã Hồ Sơ: ${student.maHoXo.padEnd(20)} │\n`;
           clipboardData += `│ Họ Tên:   ${student.hoTen.padEnd(20)} │\n`;
           clipboardData += `│ Ngày Sinh: ${student.ngaySinh.padEnd(18)} │\n`;
           clipboardData += `│ Ngành:    ${student.nganh.padEnd(20)} │\n`;
-          clipboardData += `│ Ghi Chú:  ${(student.ghiChu || 'Không có').padEnd(20)} │\n`;
+          clipboardData += `│ Ghi Chú:  ${(student.ghiChu || "Không có").padEnd(
+            20
+          )} │\n`;
           clipboardData += `└─────────────────────────────────────┘\n\n`;
         });
         break;
       default:
         clipboardData = "Mã Hồ Sơ\tHọ Tên\tNgày Sinh\tNgành\tGhi Chú\n";
         filteredStudents.value.forEach((student) => {
-          clipboardData += `${student.maHoXo}\t${student.hoTen}\t${student.ngaySinh}\t${student.nganh}\t${student.ghiChu || ''}\n`;
+          clipboardData += `${student.maHoXo}\t${student.hoTen}\t${
+            student.ngaySinh
+          }\t${student.nganh}\t${student.ghiChu || ""}\n`;
         });
     }
 
     await navigator.clipboard.writeText(clipboardData);
-    showSuccess(`Đã copy ${filteredStudents.value.length} sinh viên vào clipboard (${format.toUpperCase()})`);
+    showSuccess(
+      `Đã copy ${
+        filteredStudents.value.length
+      } sinh viên vào clipboard (${format.toUpperCase()})`
+    );
   } catch (error) {
     showError("Không thể copy vào clipboard");
     console.error("Copy error:", error);

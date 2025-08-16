@@ -217,7 +217,7 @@ const handleClearExtractedInfo = () => {
 };
 
 const handleChooseStudent = (event, row, chooseStudent) => {
-  const tableElement = document.querySelector(".table");
+  const tableElement = document.querySelector(".data-table");
   const rowElement = event.currentTarget;
   const initialScrollTop = tableElement.scrollTop;
   const initialRowOffsetTop = rowElement.offsetTop;
