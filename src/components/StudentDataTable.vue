@@ -3,6 +3,7 @@ import { ref, computed, watch } from "vue";
 import { useStudentSearchStore } from "@/stores/StudentSearch";
 import { useNotificationStore } from "@/stores/NotificationStore";
 import StudentEditModal from "./StudentEditModal.vue";
+import khongDau from "@/utils/khongDau";
 
 // Stores
 const studentSearchStore = useStudentSearchStore();
@@ -27,13 +28,16 @@ const filteredStudents = computed(() => {
 
   // Search filter
   if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase();
+    const query = searchQuery.value.trim().toLowerCase();
     students = students.filter(
       (student) =>
         student.hoTen.toLowerCase().includes(query) ||
         student.maHoXo.toLowerCase().includes(query) ||
         student.nganh.toLowerCase().includes(query) ||
-        student.ngaySinh.includes(query)
+        student.ngaySinh.includes(query) ||
+        khongDau(student.hoTen)
+          .toLowerCase()
+          .includes(khongDau(query).toLowerCase())
     );
   }
 
