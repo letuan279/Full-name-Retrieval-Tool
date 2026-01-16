@@ -30,6 +30,38 @@ const props = defineProps({
     type: Function,
     required: true,
   },
+  extractionMode: {
+    type: String,
+    default: "ai",
+  },
+  regexPattern: {
+    type: String,
+    default: "",
+  },
+  regexError: {
+    type: String,
+    default: "",
+  },
+  onlyExtractMissing: {
+    type: Boolean,
+    default: false,
+  },
+  onModeChange: {
+    type: Function,
+    required: true,
+  },
+  onRegexChange: {
+    type: Function,
+    required: true,
+  },
+  onOnlyMissingChange: {
+    type: Function,
+    required: true,
+  },
+  isExtractDisabled: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 // Stores
@@ -215,6 +247,67 @@ const handleClearMessageData = async () => {
 
         <div class="section">
           <h3 class="section-title">🛠️ Thao Tác Xử Lý</h3>
+          <div class="extraction-card">
+            <div class="extraction-header">
+              <div>
+                <p class="eyebrow">Phương thức</p>
+                <h4>Trích xuất tên</h4>
+              </div>
+              <span class="pill">{{ props.extractionMode === 'ai' ? 'AI' : 'Regex' }}</span>
+            </div>
+
+            <div class="extraction-mode">
+              <div class="mode-options">
+                <label class="mode-option">
+                  <input
+                    type="radio"
+                    name="extract-mode"
+                    value="ai"
+                    :checked="props.extractionMode === 'ai'"
+                    @change="props.onModeChange('ai')"
+                  />
+                  <span class="mode-title">AI</span>
+                  <span class="mode-sub">Dùng LLM Groq</span>
+                </label>
+                <label class="mode-option">
+                  <input
+                    type="radio"
+                    name="extract-mode"
+                    value="regex"
+                    :checked="props.extractionMode === 'regex'"
+                    @change="props.onModeChange('regex')"
+                  />
+                  <span class="mode-title">Regex</span>
+                  <span class="mode-sub">Không gọi API</span>
+                </label>
+              </div>
+            </div>
+
+            <div v-if="props.extractionMode === 'regex'" class="regex-config">
+              <label for="regex-input">Regex</label>
+              <input
+                id="regex-input"
+                class="regex-input"
+                type="text"
+                :value="props.regexPattern"
+                @input="(e) => props.onRegexChange(e.target.value)"
+                placeholder="/(?:^|\\s)([A-ZÀ-Ỹ ]{5,})/i"
+              />
+              <p v-if="props.regexError" class="regex-error">
+                {{ props.regexError }}
+              </p>
+            </div>
+
+            <label class="checkbox-row">
+              <input
+                type="checkbox"
+                :checked="props.onlyExtractMissing"
+                @change="props.onOnlyMissingChange($event.target.checked)"
+              />
+              <span>Chỉ trích cho dòng trống/NULL/ERROR</span>
+            </label>
+          </div>
+
           <div class="button-group">
             <button class="action-button primary" @click="onMessageInput">
               📨 Nhập Tin Nhắn
@@ -222,7 +315,7 @@ const handleClearMessageData = async () => {
             <button
               class="action-button secondary"
               @click="onExtractName"
-              :disabled="isExtractingName || tableData.length === 0"
+              :disabled="props.isExtractDisabled"
             >
               <span v-if="isExtractingName">⏳ Đang Xử Lý...</span>
               <span v-else>⚗️ Trích Xuất Tên</span>
@@ -344,6 +437,7 @@ const handleClearMessageData = async () => {
   border-radius: 8px;
   padding: 12px;
   text-align: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
 }
 
 .stat-card.success {
@@ -389,6 +483,7 @@ const handleClearMessageData = async () => {
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: left;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
 }
 
 .action-button:disabled {
@@ -438,6 +533,172 @@ const handleClearMessageData = async () => {
 .action-button.danger:hover:not(:disabled) {
   background: #dc2626;
   border-color: #dc2626;
+}
+
+.extraction-card {
+  border: 1px solid var(--color-border);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(248, 249, 250, 0.95));
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] .extraction-card {
+  background: linear-gradient(145deg, rgba(26, 34, 44, 0.95), rgba(18, 24, 34, 0.98));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+}
+
+.extraction-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.extraction-header h4 {
+  margin: 2px 0 0 0;
+  font-size: 16px;
+  color: var(--color-heading);
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+[data-theme="dark"] .eyebrow {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.pill {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  font-size: 12px;
+  color: var(--color-heading);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+[data-theme="dark"] .pill {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+  box-shadow: none;
+}
+
+.extraction-mode {
+  margin-bottom: 10px;
+}
+
+.mode-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.mode-option {
+  position: relative;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-background);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: start;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+[data-theme="dark"] .mode-option {
+  background: rgba(9, 14, 25, 0.9);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.mode-option input {
+  margin-top: 3px;
+}
+
+.mode-option:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+.mode-option:hover [data-theme="dark"] & {
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
+}
+
+.mode-title {
+  font-weight: 700;
+  color: var(--color-heading);
+  display: block;
+}
+
+.mode-sub {
+  font-size: 12px;
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .mode-title {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+[data-theme="dark"] .mode-sub {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.regex-config {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.regex-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-background);
+  color: var(--color-heading);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+[data-theme="dark"] .regex-input {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.regex-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-transparent);
+}
+
+.regex-error {
+  color: #ef4444;
+  font-size: 13px;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: var(--color-text);
+  font-size: 14px;
+}
+
+[data-theme="dark"] .checkbox-row {
+  color: rgba(255, 255, 255, 0.78);
 }
 
 .progress-container {

@@ -75,6 +75,15 @@ const theme = ref(
     ? localStorage.getItem("theme")
     : "light"
 );
+
+// Extraction mode & regex configuration
+const extractionMode = ref(localStorage.getItem("extractionMode") || "ai"); // ai | regex
+const regexPattern = ref(localStorage.getItem("regexPattern") || "");
+const regexError = ref("");
+const onlyExtractMissing = ref(
+  localStorage.getItem("onlyExtractMissing") === "true"
+);
+
 const tableData = ref(studentSearchStore.tableData);
 const isExtractingName = ref(false);
 const activeView = ref("student-table"); // "transaction-table" or "student-table"
@@ -109,11 +118,90 @@ const numOfNoStudentInfo = computed(() => {
   );
 });
 
+const isExtractDisabled = computed(() => {
+  if (isExtractingName.value) return true;
+  if (tableData.value.length === 0) return true;
+  if (extractionMode.value === "regex") {
+    if (regexError.value) return true;
+    if (!regexPattern.value.trim()) return true;
+  }
+  return false;
+});
+
 // Handle main action
 const toggleTheme = () => {
   theme.value = theme.value === "light" ? "dark" : "light";
   localStorage.setItem("theme", theme.value);
   document.documentElement.setAttribute("data-theme", theme.value);
+};
+
+const setExtractionMode = (mode) => {
+  extractionMode.value = mode;
+  localStorage.setItem("extractionMode", mode);
+  if (mode !== "regex") {
+    regexError.value = "";
+  } else {
+    validateRegex(regexPattern.value);
+  }
+};
+
+const handleRegexChange = (value) => {
+  regexPattern.value = value;
+  localStorage.setItem("regexPattern", value);
+  validateRegex(value);
+};
+
+const handleOnlyExtractMissingChange = (value) => {
+  onlyExtractMissing.value = value;
+  localStorage.setItem("onlyExtractMissing", value ? "true" : "false");
+};
+
+const parseRegexInput = (input) => {
+  const trimmed = input.trim();
+  if (!trimmed) {
+    throw new Error("Regex không được để trống");
+  }
+
+  // Support literal form /pattern/flags
+  if (trimmed.startsWith("/") && trimmed.lastIndexOf("/") > 0) {
+    const lastSlash = trimmed.lastIndexOf("/");
+    const pattern = trimmed.slice(1, lastSlash);
+    const flags = trimmed.slice(lastSlash + 1);
+    return new RegExp(pattern, flags);
+  }
+
+  // Plain pattern without flags
+  return new RegExp(trimmed);
+};
+
+const validateRegex = (value) => {
+  if (extractionMode.value !== "regex") {
+    regexError.value = "";
+    return true;
+  }
+
+  try {
+    parseRegexInput(value);
+    regexError.value = "";
+    return true;
+  } catch (error) {
+    regexError.value = error.message;
+    return false;
+  }
+};
+
+const getTargetRows = () => {
+  if (!onlyExtractMissing.value) {
+    return tableData.value;
+  }
+
+  return tableData.value.filter(
+    (item) =>
+      item.name === "" ||
+      item.name === "NULL" ||
+      item.name === "ERROR" ||
+      item.name === undefined
+  );
 };
 
 const handleMessageInput = async () => {
@@ -146,22 +234,37 @@ const handleMessageInput = async () => {
 };
 
 const handleExtractName = async () => {
-  if (isExtractingName.value) {
-    return;
-  }
+  if (isExtractingName.value) return;
 
   if (tableData.value.length === 0) {
     showError("Không có dữ liệu tin nhắn để trích xuất");
     return;
   }
 
+  // Validate regex before proceeding
+  if (extractionMode.value === "regex") {
+    const ok = validateRegex(regexPattern.value);
+    if (!ok) {
+      showError(`Regex không hợp lệ: ${regexError.value}`);
+      return;
+    }
+  }
+
+  const targetRows = getTargetRows();
+  if (targetRows.length === 0) {
+    showInfo("Không có dòng nào cần trích xuất");
+    return;
+  }
+
+  // Confirm overwrite when not limiting to missing rows
   if (
-    numOfExtractedName.value > 0 ||
-    numOfErrorName.value > 0 ||
-    numOfNullName.value > 0
+    !onlyExtractMissing.value &&
+    (numOfExtractedName.value > 0 ||
+      numOfErrorName.value > 0 ||
+      numOfNullName.value > 0)
   ) {
     const confirmExtract = await showConfirm(
-      "Đang có các dữ liệu tên đã được trích xuất, bạn có muốn tiếp tục?",
+      "Đang có các dữ liệu tên đã được trích xuất, bạn có muốn trích xuất lại và ghi đè?",
       "Xác nhận trích xuất lại"
     );
     if (!confirmExtract) {
@@ -170,9 +273,45 @@ const handleExtractName = async () => {
   }
 
   isExtractingName.value = true;
-  handleClearExtractedInfo();
 
-  const messages = textRetrievalTool.processMessagesWithId(tableData.value);
+  if (!onlyExtractMissing.value) {
+    handleClearExtractedInfo();
+  }
+
+  if (extractionMode.value === "regex") {
+    await runRegexExtraction(targetRows);
+  } else {
+    await runLLMExtraction(onlyExtractMissing.value ? targetRows : tableData.value);
+  }
+
+  isExtractingName.value = false;
+  findBestMatchInWholeTable();
+};
+
+const runRegexExtraction = async (rows) => {
+  try {
+    const regex = parseRegexInput(regexPattern.value);
+    const results = rows.map((row) => {
+      const matcher = new RegExp(regex.source, regex.flags);
+      const match = matcher.exec(row.message);
+      const rawName =
+        match && match.length > 1 ? match[1] : match ? match[0] : null;
+      const normalized = rawName
+        ? rawName.trim().replace(/\s+/g, " ").toUpperCase()
+        : "NULL";
+
+      return { id: row.id, fullName: normalized || "NULL" };
+    });
+
+    handleAddDataToTable(results);
+    showSuccess(`Đã trích xuất xong ${rows.length} tin nhắn bằng Regex`);
+  } catch (error) {
+    showError(`Lỗi Regex: ${error.message}`);
+  }
+};
+
+const runLLMExtraction = async (rows) => {
+  const messages = textRetrievalTool.processMessagesWithId(rows);
   for (let i = 0; i < messages.length; i += 10) {
     const batch = messages.slice(i, i + 10);
     const response = await textRetrievalTool.callApiWithRetries(
@@ -188,10 +327,7 @@ const handleExtractName = async () => {
       } messages`
     );
   }
-
-  isExtractingName.value = false;
-  findBestMatchInWholeTable();
-  showSuccess(`Đã trích xuất xong ${messages.length} tin nhắn!`);
+  showSuccess(`Đã trích xuất xong ${messages.length} tin nhắn bằng AI`);
 };
 
 const handleAddDataToTable = (data) => {
@@ -355,6 +491,7 @@ onBeforeMount(() => {
     // Load theme
     document.documentElement.setAttribute("data-theme", theme.value);
     loadTableData();
+    validateRegex(regexPattern.value);
   } catch (error) {
     showError(`Lỗi tải theme: ${error.message}`);
   }
@@ -381,6 +518,14 @@ watch(
       :onExtractName="handleExtractName"
       :onExportData="handleExportData"
       :onTabChange="handleTabChange"
+      :extractionMode="extractionMode"
+      :regexPattern="regexPattern"
+      :regexError="regexError"
+      :onlyExtractMissing="onlyExtractMissing"
+      :onModeChange="setExtractionMode"
+      :onRegexChange="handleRegexChange"
+      :onOnlyMissingChange="handleOnlyExtractMissingChange"
+      :isExtractDisabled="isExtractDisabled"
     />
 
     <!-- Main Content -->
